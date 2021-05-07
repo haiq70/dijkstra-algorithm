@@ -8,6 +8,7 @@ It is an example of a greedy algorithm - it makes the local optimal choice at ea
 Dijkstra is utilised in, including, but not limited to:
 - mapping and navigation - to find the shortest path from e.g., one city to another
 - social media networks - suggesting people who the user may know
-- telephone networks - directing phone calls through paths with the highest bandwidths.
+- telephone networks - directing phone calls through paths with the highest bandwidths
+- network routing - finding the optimal paths for transfer after packet switching.
 
 // Jakub Kwaśniak (haiq70)
