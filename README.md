@@ -1,5 +1,5 @@
 # dijkstra-algorithm
-Visualisation of Dijkstra's shortest path algorithm in Python.
+Visualisation of Dijkstra's shortest path algorithm in Python, using networkx and matplotlib modules.
 
 Dijkstra's algorithm finds the shortest path from a given vertex to all other vertices in a certain graph, or to a specified final destination (vertex).
 
