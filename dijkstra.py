@@ -1,4 +1,4 @@
-# Dijkstra's shortest path algorithm - visualisation
+# Dijkstra's shortest path algorithm - visualisation using networkx and matplotlib
 # // haiq70
 
 import networkx as nx
@@ -16,17 +16,18 @@ vertices = [[0, 3, 0, 2, 0, 0, 6],  # A # 0
             [0, 0, 1, 0, 4, 0, 2],  # F # 5
             [6, 0, 0, 0, 0, 2, 0]]  # G # 6
 
+
 # adjacency list - matrix converted manually
-edge_list = [('A', 'B', 3),
-             ('A', 'D', 2),
-             ('A', 'G', 6),
-             ('B', 'C', 6),
-             ('B', 'D', 2),
-             ('B', 'E', 1),
-             ('C', 'F', 1),
-             ('D', 'E', 3),
-             ('E', 'F', 4),
-             ('F', 'G', 2)]
+edge_list = [('A', 'B', vertices[0][1]),
+             ('A', 'D', vertices[0][3]),
+             ('A', 'G', vertices[0][6]),
+             ('B', 'C', vertices[1][2]),
+             ('B', 'D', vertices[1][3]),
+             ('B', 'E', vertices[1][4]),
+             ('C', 'F', vertices[2][5]),
+             ('D', 'E', vertices[3][4]),
+             ('E', 'F', vertices[4][5]),
+             ('F', 'G', vertices[5][6])]
 
 # initialise variable to keep track of visited nodes and distances between them
 # first 0/1 - univisited/visited
@@ -72,88 +73,120 @@ def dijkstra():
                     nodes[i][1] = distance
         mark_visited(next_vertex)
 
-def print_result():
+# display a window with distances
+def show_result():
+    global result
+    result = tk.Tk()
+    result.title("Distance")
+    result.geometry("200x150")
+
+    text_label = tk.Label(result, text="Distance from source [A] to: ").pack()
+    distance_list = tk.Listbox(result)
     counter = 0
-    print("Distance from source [A] to: ")
+
     for node in nodes:
-        print("{} = {:1.2f}".format(chr(ord('A') + counter), node[1]))
+        text = "\n{} = {:1.2f}".format(chr(ord('A') + counter), node[1])
+        distance_list.insert(counter, text)
         counter += 1
+
+    distance_list.pack()
 
 # networkx + matplotlib visualisation
 def visualise():
+    # try to get input from entry widgets
+    try:
+        start_node = start_entry.get().upper()
+        end_node = end_entry.get().upper()
 
-    start_node = start_entry.get().upper()
-    end_node = end_entry.get().upper()
-    if start_node not in alg_path:
+        if start_node not in alg_path and len(start_node) != 0:
+            message = tk.Tk()
+            message.withdraw()
+            tk.messagebox.showwarning("Warning", "The specified start node doesn't exist.")
+
+        elif end_node not in alg_path and len(end_node) != 0:
+            message = tk.Tk()
+            message.withdraw()
+            tk.messagebox.showwarning("Warning", "The specified end node doesn't exist.")
+
+        else:
+            G = nx.Graph()
+            G.add_weighted_edges_from(edge_list)
+
+            layout = nx.spring_layout(G, k=1)
+            nx.draw_networkx_nodes(G, layout, node_size=700, node_color='red')
+            nx.draw_networkx_nodes(G, layout, node_size=700, node_color='green', nodelist=start_node)
+            nx.draw_networkx_labels(G, layout, font_size=10, font_family='sans-serif')
+            nx.draw_networkx_edges(G, layout, edgelist=edge_list, width=1)
+
+            path = nx.shortest_path(G, source=start_node, target=end_node)
+            path_edges = set(zip(path, path[1:]))
+
+            for node in alg_path:
+                if node == end_node:
+                    nx.draw_networkx_nodes(G, layout, node_size=700, node_color='green', nodelist=node)
+                    break
+                else:
+                    nx.draw_networkx_nodes(G, layout, node_size=700, node_color='green', nodelist=node)
+
+            nx.draw_networkx_edges(G, layout, width=5, edgelist=path_edges, edge_color='green')
+            labels = nx.get_edge_attributes(G,'weight')
+            nx.draw_networkx_edge_labels(G, layout, edge_labels=labels)
+
+            show_result() # displays a tk window with distances from source to particular nodes
+
+            plot.axis('off')
+            title = "Dijkstra's algorithm ({} -> {})".format(start_node, end_node)
+            plot.title(title)
+            plot.show()
+
+
+    # throw an exception if the input is null
+    except:
         message = tk.Tk()
         message.withdraw()
-        tk.messagebox.showwarning("Warning", "The specified start node doesn't exist.")
+        tk.messagebox.showwarning("Warning", "Input the names of the nodes")
 
-    elif end_node not in alg_path:
-        message = tk.Tk()
-        message.withdraw()
-        tk.messagebox.showwarning("Warning", "The specified end node doesn't exist.")
+# close all active windows with one button
+def abort():
+    try:
+        root.withdraw()
+        result.withdraw()
+        plot.close()
+    except:
+        # is that even adequate?
+        pass
 
-    else:
-        G = nx.Graph()
-
-
-        G.add_weighted_edges_from(edge_list)
-
-        layout = nx.spring_layout(G, k=1)
-        nx.draw_networkx_nodes(G, layout, node_size=700, node_color='red')
-        nx.draw_networkx_labels(G, layout, font_size=10, font_family='sans-serif')
-        nx.draw_networkx_edges(G, layout, edgelist=edge_list, width=1)
-
-        path = nx.shortest_path(G, source=start_node, target=end_node)
-        path_edges = set(zip(path, path[1:]))
-
-        for node in alg_path:
-            if node == end_node:
-                nx.draw_networkx_nodes(G, layout, node_size=700, node_color='green', nodelist=node)
-                break
-            else:
-                nx.draw_networkx_nodes(G, layout, node_size=700, node_color='green', nodelist=node)
-
-        nx.draw_networkx_edges(G, layout, width=5, edgelist=path_edges, edge_color='green')
-        labels = nx.get_edge_attributes(G,'weight')
-        nx.draw_networkx_edge_labels(G, layout, edge_labels=labels)
-
-        plot.axis('off')
-        title = "Dijkstra's algorithm ({} -> {})".format(start_node, end_node)
-        plot.title(title)
-        plot.show()
-
-
+# initialise main tk window with input
 def init_window():
-    # initialise root
     global root, start_entry, end_entry
     root = tk.Tk()
     root.title("Input data")
-    root.geometry("250x200")
+    root.geometry("250x320")
+    root.resizable(False, False)
 
-    # labels
-    start_label = tk.Label(root, text="Enter start node: ")
-    start_label.grid(row=1, column=1)
-    end_label = tk.Label(root, text="Enter end node: ")
-    end_label.grid(row=2, column=1)
-
-    # entry fields
+    # labels + entry fields
+    start_label = tk.Label(root, text="Enter start node: ").pack()
     start_entry = tk.Entry(root)
-    start_entry.grid(row=1, column=2)
+    start_entry.pack()
+    end_label = tk.Label(root, text="Enter end node: ").pack()
     end_entry = tk.Entry(root)
-    end_entry.grid(row=2, column=2)
+    end_entry.pack()
+    nodes_label = tk.Label(root, text="List of nodes:").pack()
 
-    # visualise button
-    btn = tk.Button(root, text="Visualise", command=visualise)
-    btn.grid(row=3, column=1)
+    # listbox of available nodes
+    counter = 0
+    list = tk.Listbox(root)
+    for node in sorted(alg_path):
+        list.insert(counter, node)
+        counter += 1
+    list.pack()
 
+    # buttons
+    vis_btn = tk.Button(root, text="Visualise", command=visualise).pack()  # visualise
+    abort_btn = tk.Button(root, text="Abort", command=abort).pack()        # abort
 
-# main loop
+# driver program
 if __name__ == "__main__":
-    init_window()
     dijkstra()
-    print(alg_path)
-    print_result()
-
+    init_window()
     root.mainloop()
